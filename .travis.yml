@@ -34,13 +34,13 @@ jobs:
       language: sh
       addons:
         homebrew:
-          update: false
+          update: true
           packages:
             - python3
             - llvm
             - libomp
       before_install:
-        - export PATH=""/usr/local/opt/llvm/bin":$PATH"
+        - export PATH=/usr/local/opt/llvm/bin:$PATH
         - pip install virtualenv
         - virtualenv -p python3 ~/venv
         - source ~/venv/bin/activate
