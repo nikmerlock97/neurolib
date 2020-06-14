@@ -4,6 +4,7 @@ and supports both CubicHermiteSplines for jitcdde backend and np.array for numba
 backend.
 """
 
+import numba
 import numpy as np
 from chspy import CubicHermiteSpline
 from scipy.signal import square
@@ -137,12 +138,17 @@ class OrnsteinUhlenbeckProcess(ModelInput):
 
     def generate_input(self):
         x = np.random.rand(self.times.shape[0], self.num_iid) * self.mu
-        for i in range(self.times.shape[0] - 1):
-            x[i + 1, :] = (
-                x[i, :]
-                + self.dt * ((self.mu - x[i, :]) / self.tau)
-                + self.sigma * np.sqrt(self.dt) * np.random.randn(self.num_iid)
-            )
+        return self.numba_ou(x, self.times, self.dt, self.mu, self.sigma, self.tau, self.num_iid)
+
+    @staticmethod
+    @numba.njit()
+    def numba_ou(x, times, dt, mu, sigma, tau, num_iid):
+        """
+        Generation of Ornstein-Uhlenback process - wrapped in numba's jit for
+        speed.
+        """
+        for i in range(times.shape[0] - 1):
+            x[i + 1, :] = x[i, :] + dt * ((mu - x[i, :]) / tau) + sigma * np.sqrt(dt) * np.random.randn(num_iid)
         return x
 
 
