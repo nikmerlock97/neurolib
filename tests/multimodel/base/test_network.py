@@ -33,14 +33,22 @@ class InhMassTest(NeuralMass):
     mass_type = INH
 
 
+class NodeTest(Node):
+    default_output = f"q_{EXC}"
+    sync_variables = ["sync_test"]
+
+
+class SingleCouplingNodeTest(SingleCouplingExcitatoryInhibitoryNode):
+    default_output = f"q_{EXC}"
+
+
 class TestNode(unittest.TestCase):
     def _create_node(self):
         mass1 = ExcMassTest(PARAMS)
         mass1.index = 0
         mass2 = InhMassTest(PARAMS)
         mass2.index = 1
-        node = Node([mass1, mass2])
-        node.sync_variables = ["sync_test"]
+        node = NodeTest([mass1, mass2])
         return node
 
     def test_init(self):
@@ -55,6 +63,7 @@ class TestNode(unittest.TestCase):
         self.assertTrue(hasattr(node, "_derivatives"))
         self.assertTrue(hasattr(node, "_sync"))
         self.assertTrue(hasattr(node, "_callbacks"))
+        self.assertTrue(hasattr(node, "default_output"))
         self.assertTrue(isinstance(node.default_network_coupling, dict))
         self.assertTrue(isinstance(node.sync_variables, list))
 
@@ -88,7 +97,7 @@ class TestSingleCouplingExcitatoryInhibitoryNode(unittest.TestCase):
         mass1.index = 0
         mass2 = InhMassTest(PARAMS)
         mass2.index = 1
-        node = SingleCouplingExcitatoryInhibitoryNode(
+        node = SingleCouplingNodeTest(
             [mass1, mass2], local_connectivity=np.random.rand(2, 2), local_delays=np.array([[1.0, 2.0], [3.0, 4.0]]),
         )
         return node
@@ -126,7 +135,7 @@ class TestNetwork(unittest.TestCase):
         mass1.index = 0
         mass2 = InhMassTest(PARAMS)
         mass2.index = 1
-        node1 = SingleCouplingExcitatoryInhibitoryNode(
+        node1 = SingleCouplingNodeTest(
             [mass1, mass2], local_connectivity=np.random.rand(2, 2), local_delays=np.array([[1.0, 2.0], [3.0, 4.0]]),
         )
         node1.index = 0
@@ -152,6 +161,8 @@ class TestNetwork(unittest.TestCase):
         self.assertTrue(hasattr(net, "_callbacks"))
         self.assertEqual(net.max_delay, 4.0)
         self.assertEqual(len(net.sync_symbols), len(net.sync_variables) * net.num_nodes)
+        self.assertEqual(net.default_output, net[0].default_output)
+        self.assertEqual(net.default_output, net[1].default_output)
 
     def test_prepare_mass_parameters(self):
         net, _ = self._create_network()

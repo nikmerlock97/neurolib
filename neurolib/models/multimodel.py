@@ -29,8 +29,14 @@ class MultiModel(Model):
         # set model attributes
         self.name = self.model_instance.name
         self.state_vars = list(set.union(*[set(state_vars) for state_vars in self.model_instance.state_variable_names]))
-        # TODO default output support in Node and Network
-        self.default_output = None
+        self.default_output = self.model_instance.default_output
+        assert isinstance(self.default_output, str), "`default_output` must be a string."
+
+        # create parameters
+        self.params = self._create_hierarchical_params()
+
+        # TODO resolve how to integrate in neurolib's fashion
+        self.integration = None
 
         # create output and state dictionary
         self.outputs = dotdict({})
@@ -41,6 +47,9 @@ class MultiModel(Model):
         self.boldInitialized = False
 
         logging.info(f"{self.name}: Model initialized.")
+
+    def _create_hierarchical_params(self):
+        pass
 
     def getMaxDelay(self):
         return self.model_instance.max_delay

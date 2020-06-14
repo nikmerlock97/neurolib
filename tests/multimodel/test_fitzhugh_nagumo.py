@@ -108,6 +108,7 @@ class TestFitzHughNagumoNetwork(unittest.TestCase):
         self.assertTrue(isinstance(fhn, FitzHughNagumoNetwork))
         self.assertEqual(len(fhn), self.SC.shape[0])
         self.assertEqual(fhn.initial_state.shape[0], fhn.num_state_variables)
+        self.assertEqual(fhn.default_output, "x")
 
     def test_run(self):
         fhn = FitzHughNagumoNetwork(self.SC, self.DELAYS)

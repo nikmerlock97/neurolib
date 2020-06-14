@@ -118,6 +118,8 @@ class WilsonCowanNetworkNode(SingleCouplingExcitatoryInhibitoryNode):
     name = "Wilson-Cowan node"
     label = "WCnode"
 
+    default_output = f"q_mean_{EXC}"
+
     def __init__(
         self, exc_paramaters=None, inh_parameters=None, connectivity=DEFAULT_WC_NODE_CONNECTIVITY,
     ):

@@ -29,6 +29,9 @@ class Node(BackendIntegrator):
     # usually used for isolated node
     default_network_coupling = {}
 
+    # default output of the model - all nodes need to have this variable defined
+    default_output = None
+
     def __init__(self, neural_masses):
         """
         :param neural_masses: list of neural masses in this node
@@ -42,6 +45,7 @@ class Node(BackendIntegrator):
         self.num_noise_variables = sum([mass.num_noise_variables for mass in self])
         self.idx_state_var = None
         self.initialised = False
+        assert self.default_output in self.state_variable_names[0]
 
     def __str__(self):
         """
@@ -321,6 +325,9 @@ class Network(BackendIntegrator):
     # from different nodes in this network, implemented as `jitcdde` helpers
     sync_variables = []
 
+    # default output of the network - e.g. BOLD is computed from this
+    default_output = None
+
     def __init__(self, nodes, connectivity_matrix, delay_matrix=None):
         """
         :param nodes: list of nodes in this network
@@ -345,6 +352,13 @@ class Network(BackendIntegrator):
         self.connectivity = connectivity_matrix
         self.delays = delay_matrix
         self.initialised = False
+
+        if self.default_output is None:
+            default_output = set([node.default_output for node in self])
+            assert len(default_output) == 1
+            self.default_output = next(iter(default_output))
+
+        assert all(self.default_output in node_state_vars for node_state_vars in self.state_variable_names)
 
         self.init_network()
 

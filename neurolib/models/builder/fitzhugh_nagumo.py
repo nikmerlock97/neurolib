@@ -101,6 +101,7 @@ class FitzHughNagumoNetworkNode(Node):
     label = "FHNnode"
 
     default_network_coupling = {"network_x": 0.0, "network_y": 0.0}
+    default_output = "x"
 
     def __init__(self, parameters=None):
         """

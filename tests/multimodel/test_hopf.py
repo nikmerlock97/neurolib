@@ -103,6 +103,7 @@ class TestHopfNetwork(unittest.TestCase):
         self.assertTrue(isinstance(hopf, HopfNetwork))
         self.assertEqual(len(hopf), self.SC.shape[0])
         self.assertEqual(hopf.initial_state.shape[0], hopf.num_state_variables)
+        self.assertEqual(hopf.default_output, "x")
 
     def test_run(self):
         hopf = HopfNetwork(self.SC, self.DELAYS)

@@ -11,6 +11,7 @@ from jitcdde import jitcdde_input
 from neurolib.models.builder.adex import (
     DEFAULT_PARAMS_EXC,
     DEFAULT_PARAMS_INH,
+    EXC,
     AdExNetwork,
     AdExNetworkNode,
     ExcitatoryAdExMass,
@@ -214,6 +215,7 @@ class TestAdExNetwork(unittest.TestCase):
         self.assertTrue(isinstance(adex, AdExNetwork))
         self.assertEqual(len(adex), self.SC.shape[0])
         self.assertEqual(adex.initial_state.shape[0], adex.num_state_variables)
+        self.assertEqual(adex.default_output, f"q_mean_{EXC}")
 
     def test_run(self):
         np.random.seed(42)

@@ -13,6 +13,7 @@ from neurolib.models.builder.model_input import ZeroInput
 from neurolib.models.builder.wilson_cowan import (
     DEFAULT_PARAMS_EXC,
     DEFAULT_PARAMS_INH,
+    EXC,
     ExcitatoryWilsonCowanMass,
     InhibitoryWilsonCowanMass,
     WilsonCowanNetwork,
@@ -126,6 +127,7 @@ class TestWilsonCowanNetwork(unittest.TestCase):
         self.assertTrue(isinstance(wc, WilsonCowanNetwork))
         self.assertEqual(len(wc), self.SC.shape[0])
         self.assertEqual(wc.initial_state.shape[0], wc.num_state_variables)
+        self.assertEqual(wc.default_output, f"q_mean_{EXC}")
 
     def test_run(self):
         wc = WilsonCowanNetwork(self.SC, self.DELAYS)

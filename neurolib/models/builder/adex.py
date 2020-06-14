@@ -673,6 +673,8 @@ class AdExNetworkNode(SingleCouplingExcitatoryInhibitoryNode):
         "network_exc_exc_sq": 0.0,
     }
 
+    default_output = f"q_mean_{EXC}"
+
     def _rescale_connectivity(self):
         """
         Rescale connection strengths for AdEx. Should work also for AdEx nodes

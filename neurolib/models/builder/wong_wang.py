@@ -233,6 +233,8 @@ class WongWangNetworkNode(SingleCouplingExcitatoryInhibitoryNode):
     name = "Wong-Wang node"
     label = "WWnode"
 
+    default_output = f"S_{EXC}"
+
     def __init__(
         self, exc_paramaters=None, inh_parameters=None, connectivity=DEFAULT_WW_NODE_CONNECTIVITY,
     ):
