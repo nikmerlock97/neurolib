@@ -1,6 +1,6 @@
 import logging
 
-from ..utils.collections import dotdict
+from ..utils.collections import dotdict, flatten_nested_dict, star_dotdict
 from .builder.base.network import Network, Node
 from .model import Model
 
@@ -33,7 +33,7 @@ class MultiModel(Model):
         assert isinstance(self.default_output, str), "`default_output` must be a string."
 
         # create parameters
-        self.params = self._create_hierarchical_params()
+        self.params = star_dotdict(flatten_nested_dict(self.model_instance.get_nested_params()))
 
         # TODO resolve how to integrate in neurolib's fashion
         self.integration = None
@@ -47,9 +47,6 @@ class MultiModel(Model):
         self.boldInitialized = False
 
         logging.info(f"{self.name}: Model initialized.")
-
-    def _create_hierarchical_params(self):
-        pass
 
     def getMaxDelay(self):
         return self.model_instance.max_delay
