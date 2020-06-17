@@ -43,3 +43,7 @@ class TestParameterSpace(unittest.TestCase):
 
         par.dict()
         print(par)
+
+
+if __name__ == "__main__":
+    unittest.main()

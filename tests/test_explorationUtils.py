@@ -32,11 +32,7 @@ class TestExplorationUtils(unittest.TestCase):
         model.params.duration = 11 * 1000  # ms
         model.params.dt = 0.2
         parameters = ParameterSpace(
-            {
-                "mue_ext_mean": np.linspace(0, 3, 2), 
-                "mui_ext_mean": np.linspace(0, 3, 2),
-                "b": [0.0, 10.0],
-            },
+            {"mue_ext_mean": np.linspace(0, 3, 2), "mui_ext_mean": np.linspace(0, 3, 2), "b": [0.0, 10.0],},
             kind="grid",
         )
         search = BoxSearch(
@@ -52,18 +48,14 @@ class TestExplorationUtils(unittest.TestCase):
         cls.ds = ds
 
     def test_processExplorationResults(self):
-        eu.processExplorationResults(
-            self.search, model=self.model, ds=self.ds, bold_transient=0
-        )
+        eu.processExplorationResults(self.search, model=self.model, ds=self.ds, bold_transient=0)
 
     def test_findCloseResults(self):
         eu.findCloseResults(self.search.dfResults, dist=1, mue_ext_mean=0, mui_ext_mean=0.0)
 
     @pytest.mark.skipif(sys.platform in ["darwin", "win32"], reason="Testing plots does not work on macOS or Windows")
     def test_plotExplorationResults(self):
-        eu.processExplorationResults(
-            self.search, model=self.model, ds=self.ds, bold_transient=0
-        )
+        eu.processExplorationResults(self.search, model=self.model, ds=self.ds, bold_transient=0)
 
         # one_figure = True
         # alpha_mask
@@ -95,3 +87,7 @@ class TestExplorationUtils(unittest.TestCase):
     @pytest.mark.skipif(sys.platform in ["darwin", "win32"], reason="Testing plots does not work on macOS or Windows")
     def test_plotRun(self):
         eu.plotResult(self.search, 0)
+
+
+if __name__ == "__main__":
+    unittest.main()
