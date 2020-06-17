@@ -9,6 +9,10 @@ from jitcdde import y as state_vector
 from .backend import BackendIntegrator
 from ..base.neural_mass import EXC, NeuralMass
 
+NESTED_PARAMS_NET = "net"
+NESTED_PARAMS_NODE = "node"
+NESTED_PARAMS_MASS = "mass"
+
 
 class Node(BackendIntegrator):
     """
@@ -94,6 +98,22 @@ class Node(BackendIntegrator):
     @property
     def max_delay(self):
         return 0.0
+
+    def get_nested_params(self):
+        """
+        Return nested dictionary with parameters from all masses within this
+        node.
+
+        :return: nested dictionary with all parameters
+        :rtype: dict
+        """
+        assert self.initialised
+        node_key = f"{NESTED_PARAMS_NODE}_{self.index}"
+        nested_dict = {node_key: {}}
+        for mass in self:
+            mass_key = f"{NESTED_PARAMS_MASS}_{mass.index}"
+            nested_dict[node_key][mass_key] = mass.parameters
+        return nested_dict
 
     def init_node(self, **kwargs):
         """
@@ -448,6 +468,20 @@ class Network(BackendIntegrator):
         assert all(p is None or isinstance(p, native_type) for p in param)
         assert len(param) == num_nodes
         return param
+
+    def get_nested_params(self):
+        """
+        Return nested dictionary with parameters from all nodes and all masses
+        within this network.
+
+        :return: nested dictionary with all parameters
+        :rtype: dict
+        """
+        assert self.initialised
+        nested_dict = {NESTED_PARAMS_NET: {}}
+        for node in self:
+            nested_dict[NESTED_PARAMS_NET].update(node.get_nested_params())
+        return nested_dict
 
     def init_network(self, **kwargs):
         """
