@@ -5,7 +5,7 @@ Tests of modelling class.
 import unittest
 
 import symengine as se
-from neurolib.models.builder.base.neural_mass import NeuralMass
+from neurolib.models.multimodel.builder.base.neural_mass import NeuralMass
 
 
 class MassTest(NeuralMass):
@@ -40,6 +40,14 @@ class TestNeuralMass(unittest.TestCase):
     def test_validate_params(self):
         mass = MassTest(self.PARAMS)
         self.assertDictEqual(self.PARAMS, mass.parameters)
+
+    def test_update_params(self):
+        UPDATE_WITH = {"a": 2.4}
+
+        mass = MassTest(self.PARAMS)
+        self.assertDictEqual(self.PARAMS, mass.parameters)
+        mass.update_parameters(UPDATE_WITH)
+        self.assertDictEqual({**self.PARAMS, **UPDATE_WITH}, mass.parameters)
 
     def test_init_mass(self):
         mass = MassTest(self.PARAMS)

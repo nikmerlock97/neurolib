@@ -72,3 +72,35 @@ def flatten_nested_dict(nested_dict, parent_key="", sep=DEFAULT_STAR_SEPARATOR):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def flat_dict_to_nested(flat_dict, sep=DEFAULT_STAR_SEPARATOR):
+    """
+    Transform flat dictionary into nested one.
+
+    :param flat_dict: flat dictionary with parameters, keys separated with `sep`
+    :type flat_dict: dict
+    :param sep: separator
+    :type sep: str
+    :return: nested dictionary
+    :rtype: dict
+    """
+
+    def write_params_recurs(levels, out_dict, value_to_write):
+        current_lookup = out_dict
+        # all but last - that is actual key we want to write
+        for level in levels[:-1]:
+            # init empty dictionary if doesn't exists
+            if level not in current_lookup:
+                current_lookup[level] = {}
+            # change lookup by level lower
+            current_lookup = current_lookup[level]
+        # write last level as value
+        current_lookup[levels[-1]] = value_to_write
+
+    nested_dict = {}
+    for key, value in flat_dict.items():
+        levels = key.split(sep)
+        write_params_recurs(levels, nested_dict, value)
+
+    return nested_dict

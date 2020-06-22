@@ -7,8 +7,9 @@ from copy import deepcopy
 
 import numpy as np
 import symengine as se
-from neurolib.models.builder.base.network import Network, Node, SingleCouplingExcitatoryInhibitoryNode
-from neurolib.models.builder.base.neural_mass import EXC, INH, NeuralMass
+from neurolib.models.multimodel.builder.base.constants import EXC, INH
+from neurolib.models.multimodel.builder.base.network import Network, Node, SingleCouplingExcitatoryInhibitoryNode
+from neurolib.models.multimodel.builder.base.neural_mass import NeuralMass
 
 PARAMS = {"a": 1.2, "b": 11.9}
 
@@ -67,6 +68,14 @@ class TestNode(unittest.TestCase):
         self.assertTrue(isinstance(node.default_network_coupling, dict))
         self.assertTrue(isinstance(node.sync_variables, list))
 
+    def test_update_parameters(self):
+        UPDATE_WITH = {"a": 2.4}
+
+        node = self._create_node()
+        node.update_parameters({"mass_0": UPDATE_WITH, "mass_1": UPDATE_WITH})
+        self.assertDictEqual({**PARAMS, **UPDATE_WITH}, node[0].parameters)
+        self.assertDictEqual({**PARAMS, **UPDATE_WITH}, node[1].parameters)
+
     def test_strip_index(self):
         node = self._create_node()
         self.assertEqual(node._strip_index("test_symb_1_2"), "test_symb_1")
@@ -83,7 +92,7 @@ class TestNode(unittest.TestCase):
         self.assertFalse(node.initialised)
         node.init_node(start_idx_for_noise=6)
         self.assertTrue(node.initialised)
-        self.assertTrue(isinstance(node.get_nested_params(), dict))
+        self.assertTrue(isinstance(node.get_nested_parameters(), dict))
         self.assertEqual(len(node.sync_symbols), 1)
         self.assertTrue(all(isinstance(symb, se.Symbol) for symb in node.sync_symbols.values()))
         np.testing.assert_equal(np.zeros((node.num_state_variables)), node.initial_state)
@@ -112,6 +121,17 @@ class TestSingleCouplingExcitatoryInhibitoryNode(unittest.TestCase):
         self.assertEqual(node.max_delay, 4.0)
         self.assertEqual(np.array([0]), node.excitatory_masses)
         self.assertEqual(np.array([1]), node.inhibitory_masses)
+
+    def test_update_parameters(self):
+        UPDATE_WITH = {"a": 2.4}
+        UPDATE_CONNECTIVITY = np.random.rand(2, 2)
+        node = self._create_node()
+        node.update_parameters(
+            {"mass_0": UPDATE_WITH, "mass_1": UPDATE_WITH, "local_connectivity": UPDATE_CONNECTIVITY}
+        )
+        self.assertDictEqual({**PARAMS, **UPDATE_WITH}, node[0].parameters)
+        self.assertDictEqual({**PARAMS, **UPDATE_WITH}, node[1].parameters)
+        np.testing.assert_equal(UPDATE_CONNECTIVITY, node.connectivity)
 
     def test_init_node(self):
         node = self._create_node()
@@ -159,12 +179,20 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(len(net), net.num_nodes)
         self.assertTrue(isinstance(net.__str__(), str))
         self.assertTrue(isinstance(net.describe(), dict))
-        self.assertTrue(isinstance(net.get_nested_params(), dict))
+        self.assertTrue(isinstance(net.get_nested_parameters(), dict))
         self.assertTrue(hasattr(net, "_callbacks"))
         self.assertEqual(net.max_delay, 4.0)
         self.assertEqual(len(net.sync_symbols), len(net.sync_variables) * net.num_nodes)
         self.assertEqual(net.default_output, net[0].default_output)
         self.assertEqual(net.default_output, net[1].default_output)
+
+    def test_update_parameters(self):
+        UPDATE_CONNECTIVITY = np.random.rand(2, 2)
+        UPDATE_DELAYS = np.abs(np.random.rand(2, 2))
+        net, _ = self._create_network()
+        net.update_parameters({"connectivity": UPDATE_CONNECTIVITY, "delays": UPDATE_DELAYS})
+        np.testing.assert_equal(net.connectivity, UPDATE_CONNECTIVITY)
+        np.testing.assert_equal(net.delays, UPDATE_DELAYS)
 
     def test_prepare_mass_parameters(self):
         net, _ = self._create_network()
@@ -220,7 +248,6 @@ class TestNetwork(unittest.TestCase):
             self.assertTrue(isinstance(coupling[1], se.Add))
             evaluated = se.sympify(coupling[1]).subs(subs)
             np.testing.assert_allclose(float(evaluated), net.connectivity.sum(axis=0)[i])
-        # self.assertTrue(False)
 
     def test_additive_coupling_multiplier(self):
         MULTIPLIER = 2.4

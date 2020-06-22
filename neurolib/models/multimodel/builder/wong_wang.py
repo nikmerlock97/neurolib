@@ -24,8 +24,9 @@ import numpy as np
 from jitcdde import input as system_input
 from symengine import exp
 
+from ..builder.base.constants import EXC, INH, LAMBDA_SPEED
 from ..builder.base.network import Node, SingleCouplingExcitatoryInhibitoryNode
-from ..builder.base.neural_mass import EXC, INH, LAMBDA_SPEED, NeuralMass
+from ..builder.base.neural_mass import NeuralMass
 
 # TODO compare with TVB (at least the reduced version - they have it)
 

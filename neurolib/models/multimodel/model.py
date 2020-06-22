@@ -1,8 +1,8 @@
 import logging
 
-from ..utils.collections import dotdict, flatten_nested_dict, star_dotdict
+from ...utils.collections import dotdict, flatten_nested_dict, star_dotdict
+from ..model import Model
 from .builder.base.network import Network, Node
-from .model import Model
 
 
 class MultiModel(Model):
@@ -33,7 +33,7 @@ class MultiModel(Model):
         assert isinstance(self.default_output, str), "`default_output` must be a string."
 
         # create parameters
-        self.params = star_dotdict(flatten_nested_dict(self.model_instance.get_nested_params()))
+        self.params = star_dotdict(flatten_nested_dict(self.model_instance.get_nested_parameters()))
 
         # TODO resolve how to integrate in neurolib's fashion
         self.integration = None

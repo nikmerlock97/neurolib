@@ -7,13 +7,13 @@ import unittest
 import numpy as np
 import xarray as xr
 from jitcdde import jitcdde_input
-from neurolib.models.builder.fitzhugh_nagumo import (
+from neurolib.models.multimodel.builder.fitzhugh_nagumo import (
     DEFAULT_PARAMS,
     FitzHughNagumoMass,
     FitzHughNagumoNetwork,
     FitzHughNagumoNetworkNode,
 )
-from neurolib.models.builder.model_input import ZeroInput
+from neurolib.models.multimodel.builder.model_input import ZeroInput
 
 DURATION = 100.0
 DT = 0.1

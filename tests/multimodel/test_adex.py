@@ -8,10 +8,10 @@ import numba
 import numpy as np
 import xarray as xr
 from jitcdde import jitcdde_input
-from neurolib.models.builder.adex import (
+from neurolib.models.multimodel.builder.adex import (
+    DEFAULT_ADEX_NODE_CONNECTIVITY,
     DEFAULT_PARAMS_EXC,
     DEFAULT_PARAMS_INH,
-    EXC,
     AdExNetwork,
     AdExNetworkNode,
     ExcitatoryAdExMass,
@@ -19,7 +19,16 @@ from neurolib.models.builder.adex import (
     _get_interpolation_values,
     _table_lookup,
 )
-from neurolib.models.builder.model_input import ZeroInput
+from neurolib.models.multimodel.builder.base.constants import EXC
+from neurolib.models.multimodel.builder.model_input import ZeroInput
+
+# these keys do not test since they are rescaled on the go
+PARAMS_NOT_TEST_KEYS = ["c_global", "tau_m"]
+
+
+def _strip_keys(dict_test, strip_keys=PARAMS_NOT_TEST_KEYS):
+    return {k: v for k, v in dict_test.items() if k not in strip_keys}
+
 
 DURATION = 100.0
 DT = 0.1
@@ -123,8 +132,8 @@ class TestAdExMass(ALNMassTestCase):
         adex_inh = self._create_inh_mass()
         self.assertTrue(isinstance(adex_exc, ExcitatoryAdExMass))
         self.assertTrue(isinstance(adex_inh, InhibitoryAdExMass))
-        self.assertDictEqual(adex_exc.parameters, DEFAULT_PARAMS_EXC)
-        self.assertDictEqual(adex_inh.parameters, DEFAULT_PARAMS_INH)
+        self.assertDictEqual(_strip_keys(adex_exc.parameters), _strip_keys(DEFAULT_PARAMS_EXC))
+        self.assertDictEqual(_strip_keys(adex_inh.parameters), _strip_keys(DEFAULT_PARAMS_INH))
         # test cascade
         np.testing.assert_equal(adex_exc.mu_range, adex_inh.mu_range)
         np.testing.assert_equal(adex_exc.sigma_range, adex_inh.sigma_range)
@@ -153,6 +162,14 @@ class TestAdExMass(ALNMassTestCase):
             self.assertEqual(len(adex.initial_state), adex.num_state_variables)
             self.assertEqual(len(adex.noise_input_idx), adex.num_noise_variables)
 
+    def test_update_rescale_params(self):
+        # update params that have to do something with rescaling
+        UPDATE_PARAMS = {"C_m": 150.0, "J_exc_max": 3.0}
+        adex = self._create_exc_mass()
+        adex.update_parameters(UPDATE_PARAMS)
+        self.assertEqual(adex.parameters["tau_m"], 15.0)
+        self.assertEqual(adex.parameters["c_global"], 0.4 * adex.parameters["tau_syn_exc"] / 3.0)
+
     def test_run(self):
         adex_exc = self._create_exc_mass()
         adex_inh = self._create_inh_mass()
@@ -175,14 +192,21 @@ class TestAdExNetworkNode(unittest.TestCase):
         adex = self._create_node()
         self.assertTrue(isinstance(adex, AdExNetworkNode))
         self.assertEqual(len(adex), 2)
-        self.assertDictEqual(adex[0].parameters, DEFAULT_PARAMS_EXC)
-        self.assertDictEqual(adex[1].parameters, DEFAULT_PARAMS_INH)
+        self.assertDictEqual(_strip_keys(adex[0].parameters), _strip_keys(DEFAULT_PARAMS_EXC))
+        self.assertDictEqual(_strip_keys(adex[1].parameters), _strip_keys(DEFAULT_PARAMS_INH))
         self.assertTrue(hasattr(adex, "_rescale_connectivity"))
         self.assertEqual(len(adex._sync()), 4 * len(adex))
         self.assertEqual(len(adex.default_network_coupling), 2)
         np.testing.assert_equal(
             np.array(sum([adexm.initial_state for adexm in adex], [])), adex.initial_state,
         )
+
+    def test_update_rescale_params(self):
+        adex = self._create_node()
+        # update connectivity and check rescaling
+        old_rescaled = adex.connectivity.copy()
+        adex.update_parameters({"local_connectivity": 2 * DEFAULT_ADEX_NODE_CONNECTIVITY})
+        np.testing.assert_equal(adex.connectivity, 2 * old_rescaled)
 
     def test_run(self):
         adex = self._create_node()

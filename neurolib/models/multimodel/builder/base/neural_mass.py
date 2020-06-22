@@ -4,12 +4,6 @@ Base for all mass models.
 import symengine as se
 from jitcdde import y as state_vector
 
-# useful constants
-EXC = "EXC"
-INH = "INH"
-# speed for dummy fixed-point-dynamical variable
-LAMBDA_SPEED = 10.0
-
 
 class NeuralMass:
     """
@@ -149,6 +143,18 @@ class NeuralMass:
         if self.noise_input_idx is None:
             self.noise_input_idx = [start_idx_for_noise + i for i in range(self.num_noise_variables)]
         self.initialised = True
+
+    def update_parameters(self, parameters_dict):
+        """
+        Update parameters of the mass.
+
+        :param parameters_dict: new parameters for this mass
+        :type parameters_dict: dict
+        """
+        assert isinstance(parameters_dict, dict)
+        self.parameters.update(parameters_dict)
+        # validate again
+        self._validate_parameters()
 
     def _callbacks(self):
         """

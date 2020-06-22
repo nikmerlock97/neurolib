@@ -15,6 +15,7 @@ Additional reference:
 
 import logging
 import os
+from copy import deepcopy
 
 import numba
 import numpy as np
@@ -22,8 +23,9 @@ import symengine as se
 from h5py import File
 from jitcdde import input as system_input
 
+from ..builder.base.constants import EXC, INH, LAMBDA_SPEED
 from ..builder.base.network import Network, SingleCouplingExcitatoryInhibitoryNode
-from ..builder.base.neural_mass import EXC, INH, LAMBDA_SPEED, NeuralMass
+from ..builder.base.neural_mass import NeuralMass
 
 DEFAULT_CASCADE_FILENAME = "quantities_cascade.h5"
 
@@ -212,6 +214,7 @@ class AdExMass(NeuralMass):
         """
         Rescale connection strengths for AdEx.
         """
+        parameters = deepcopy(parameters)
         assert isinstance(parameters, dict)
         parameters["c_global"] = parameters["c_global"] * parameters["tau_syn_exc"] / parameters["J_exc_max"]
 
@@ -228,7 +231,7 @@ class AdExMass(NeuralMass):
         parameters = self._rescale_strengths(parameters)
         super().__init__(parameters=parameters)
         lin_nonlin_cascade_filename = lin_nonlin_cascade_filename or os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..", "aln", "aln-precalc", DEFAULT_CASCADE_FILENAME,
+            os.path.dirname(os.path.realpath(__file__)), "..", "..", "aln", "aln-precalc", DEFAULT_CASCADE_FILENAME,
         )
         self._load_lin_nonlin_cascade(lin_nonlin_cascade_filename)
 
@@ -250,6 +253,33 @@ class AdExMass(NeuralMass):
         # close the file
         loaded_h5.close()
         self.lin_nonlin_fname = filename
+
+    def update_parameters(self, parameters_dict):
+        """
+        Update parameters as in the base class but also rescale.
+        """
+        # if we are changing C_m or g_L, update tau_m as well
+        if any(k in parameters_dict for k in ("C_m", "g_L")):
+            C_m = parameters_dict["C_m"] if "C_m" in parameters_dict else self.parameters["C_m"]
+            g_L = parameters_dict["g_L"] if "g_L" in parameters_dict else self.parameters["g_L"]
+            parameters_dict["tau_m"] = C_m / g_L
+
+        # if we are chaning any of the J_exc_max, tau_syn_exc or c_global, rescale c_global
+        if any(k in parameters_dict for k in ("c_global", "J_exc_max", "tau_syn_exc")):
+            # get original c_global
+            c_global = (
+                parameters_dict["c_global"]
+                if "c_global" in parameters_dict
+                else self.parameters["c_global"] * (self.parameters["J_exc_max"] / self.parameters["tau_syn_exc"])
+            )
+            tau_syn_exc = (
+                parameters_dict["tau_syn_exc"] if "tau_syn_exc" in parameters_dict else self.parameters["tau_syn_exc"]
+            )
+            J_exc_max = parameters_dict["J_exc_max"] if "J_exc_max" in parameters_dict else self.parameters["J_exc_max"]
+            parameters_dict["c_global"] = c_global * tau_syn_exc / J_exc_max
+
+        # update all parameters finally
+        super().update_parameters(parameters_dict)
 
     def describe(self):
         return {
@@ -735,6 +765,15 @@ class AdExNetworkNode(SingleCouplingExcitatoryInhibitoryNode):
             neural_masses=[excitatory_mass, inhibitory_mass], local_connectivity=connectivity, local_delays=delays,
         )
         self._rescale_connectivity()
+
+    def update_parameters(self, parameters_dict):
+        """
+        Rescale connectivity after parameters update if connectivity was updated.
+        """
+        rescale_flag = "local_connectivity" in parameters_dict
+        super().update_parameters(parameters_dict)
+        if rescale_flag:
+            self._rescale_connectivity()
 
     def _sync(self):
         """

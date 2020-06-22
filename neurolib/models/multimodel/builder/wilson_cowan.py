@@ -17,8 +17,9 @@ import numpy as np
 from jitcdde import input as system_input
 from symengine import exp
 
+from ..builder.base.constants import EXC, INH
 from ..builder.base.network import Network, SingleCouplingExcitatoryInhibitoryNode
-from ..builder.base.neural_mass import EXC, INH, NeuralMass
+from ..builder.base.neural_mass import NeuralMass
 
 DEFAULT_PARAMS_EXC = {"a": 1.5, "mu": 3.0, "tau": 2.5, "ext_input": 0.6}
 DEFAULT_PARAMS_INH = {"a": 1.5, "mu": 3.0, "tau": 3.75, "ext_input": 0.0}

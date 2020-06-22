@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 import xarray as xr
 from jitcdde import jitcdde_input
-from neurolib.models.builder.hopf import DEFAULT_PARAMS, HopfMass, HopfNetwork, HopfNetworkNode
-from neurolib.models.builder.model_input import ZeroInput
+from neurolib.models.multimodel.builder.hopf import DEFAULT_PARAMS, HopfMass, HopfNetwork, HopfNetworkNode
+from neurolib.models.multimodel.builder.model_input import ZeroInput
 
 DURATION = 100.0
 DT = 0.1

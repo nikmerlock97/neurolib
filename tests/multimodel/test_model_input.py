@@ -7,7 +7,7 @@ import unittest
 import numpy as np
 from chspy import CubicHermiteSpline
 
-from neurolib.models.builder.model_input import (
+from neurolib.models.multimodel.builder.model_input import (
     LinearRampInput,
     OrnsteinUhlenbeckProcess,
     SinusoidalInput,

@@ -15,8 +15,8 @@ import symengine as se
 import xarray as xr
 from jitcdde import t as time_vector
 from jitcdde import y as state_vector
-from neurolib.models.builder.base.backend import BackendIntegrator, BaseBackend, JitcddeBackend, NumbaBackend
-from neurolib.models.builder.model_input import ZeroInput
+from neurolib.models.multimodel.builder.base.backend import BackendIntegrator, BaseBackend, JitcddeBackend, NumbaBackend
+from neurolib.models.multimodel.builder.model_input import ZeroInput
 
 
 class TestBaseBackend(unittest.TestCase):

@@ -9,11 +9,11 @@ import unittest
 import numpy as np
 import xarray as xr
 from jitcdde import jitcdde_input
-from neurolib.models.builder.model_input import ZeroInput
-from neurolib.models.builder.wilson_cowan import (
+from neurolib.models.multimodel.builder.base.constants import EXC
+from neurolib.models.multimodel.builder.model_input import ZeroInput
+from neurolib.models.multimodel.builder.wilson_cowan import (
     DEFAULT_PARAMS_EXC,
     DEFAULT_PARAMS_INH,
-    EXC,
     ExcitatoryWilsonCowanMass,
     InhibitoryWilsonCowanMass,
     WilsonCowanNetwork,
