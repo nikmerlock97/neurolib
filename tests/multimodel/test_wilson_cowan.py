@@ -1,7 +1,5 @@
 """
 Set of tests for Wilson-Cowan model.
-
-(c) Nikola Jajcay
 """
 
 import unittest

@@ -1,7 +1,5 @@
 """
 Set of tests for thalamus mass models.
-
-(c) Nikola Jajcay
 """
 
 import unittest
