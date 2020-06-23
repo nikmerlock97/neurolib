@@ -30,12 +30,8 @@ def kuramoto(traces, dt=0.1, smoothing=0.0, peakrange=[0.1, 0.2]):
 
         # find peaks
         if smoothing > 0:
-            a = scipy.ndimage.filters.gaussian_filter(
-                traces[n], smoothing
-            )  # smooth data
-        maximalist = scipy.signal.find_peaks_cwt(
-            a, np.arange(peakrange[0], peakrange[1])
-        )
+            a = scipy.ndimage.filters.gaussian_filter(traces[n], smoothing)  # smooth data
+        maximalist = scipy.signal.find_peaks_cwt(a, np.arange(peakrange[0], peakrange[1]))
         maximalist = np.append(maximalist, len(traces[n]) - 1).astype(int)
 
         if len(maximalist) > 1:
@@ -75,9 +71,7 @@ def matrix_correlation(M1, M2):
     :return: Correlation coefficient
     :rtype: float
     """
-    cc = np.corrcoef(
-        M1[np.triu_indices_from(M1, k=1)], M2[np.triu_indices_from(M2, k=1)]
-    )[0, 1]
+    cc = np.corrcoef(M1[np.triu_indices_from(M1, k=1)], M2[np.triu_indices_from(M2, k=1)])[0, 1]
     return cc
 
 
@@ -100,11 +94,9 @@ def weighted_correlation(x, y, w):
 
     def weighted_cov(x, y, w):
         """Weighted Covariance"""
-        return np.sum(
-            w * (x - weighted_mean(x, w)) * (y - weighted_mean(y, w))
-        ) / np.sum(w)
+        return np.sum(w * (x - weighted_mean(x, w)) * (y - weighted_mean(y, w))) / np.sum(w)
 
-    return weighted_cov(x, y, w) / np.sqrt(cov(x, x, w) * weighted_cov(y, y, w))
+    return weighted_cov(x, y, w) / np.sqrt(weighted_cov(x, x, w) * weighted_cov(y, y, w))
 
 
 def fc(ts):
@@ -150,9 +142,7 @@ def fcd(ts, windowsize=30, stepsize=5):
         for f1 in corrFCs:
             f2i = 0
             for f2 in corrFCs:
-                FCd[f1i, f2i] = np.corrcoef(
-                    f1.reshape((1, f1.size)), f2.reshape((1, f2.size))
-                )[0, 1]
+                FCd[f1i, f2i] = np.corrcoef(f1.reshape((1, f1.size)), f2.reshape((1, f2.size)))[0, 1]
                 f2i += 1
             f1i += 1
 
@@ -303,11 +293,7 @@ def getPowerSpectrum(activity, dt, maxfr=70, spectrum_windowsize=1.0, normalize=
     assert len(activity.shape) == 1, "activity is not one-dimensional!"
 
     f, Pxx_spec = scipy.signal.welch(
-        activity,
-        1000 / dt,
-        window="hanning",
-        nperseg=int(spectrum_windowsize * 1000 / dt),
-        scaling="spectrum",
+        activity, 1000 / dt, window="hanning", nperseg=int(spectrum_windowsize * 1000 / dt), scaling="spectrum",
     )
     f = f[f < maxfr]
     Pxx_spec = Pxx_spec[0 : len(f)]
@@ -316,9 +302,7 @@ def getPowerSpectrum(activity, dt, maxfr=70, spectrum_windowsize=1.0, normalize=
     return f, Pxx_spec
 
 
-def getMeanPowerSpectrum(
-    activities, dt, maxfr=70, spectrum_windowsize=1.0, normalize=False
-):
+def getMeanPowerSpectrum(activities, dt, maxfr=70, spectrum_windowsize=1.0, normalize=False):
     """Returns the mean power spectrum of multiple timeseries.
     
     :param activities: N-dimensional timeseries
@@ -336,9 +320,7 @@ def getMeanPowerSpectrum(
     :rtype: [np.ndarray, np.ndarray]
     """
 
-    powers = np.zeros(
-        getPowerSpectrum(activities[0], dt, maxfr, spectrum_windowsize)[0].shape
-    )
+    powers = np.zeros(getPowerSpectrum(activities[0], dt, maxfr, spectrum_windowsize)[0].shape)
     ps = []
     for rate in activities:
         f, Pxx_spec = getPowerSpectrum(rate, dt, maxfr, spectrum_windowsize)
@@ -399,9 +381,7 @@ def construct_stimulus(
 
     def sinus_stim(f=1, amplitude=0.2, positive=0, phase=0, cycles=1, t_pause=0):
         x = np.linspace(np.pi, -np.pi, int(1000 / dt / f))
-        sinus_function = np.hstack(
-            ((np.sin(x + phase) + positive), np.tile(0, t_pause))
-        )
+        sinus_function = np.hstack(((np.sin(x + phase) + positive), np.tile(0, t_pause)))
         sinus_function *= amplitude
         return np.tile(sinus_function, cycles)
 
@@ -411,21 +391,13 @@ def construct_stimulus(
         n_periods = n_periods or int(stim_freq)
 
         stimulus = np.hstack(
-            (
-                [stim_bias] * int(nostim_before / dt),
-                np.tile(sinus_stim(stim_freq, stim_amp) + stim_bias, n_periods),
-            )
+            ([stim_bias] * int(nostim_before / dt), np.tile(sinus_stim(stim_freq, stim_amp) + stim_bias, n_periods),)
         )
         stimulus = np.hstack((stimulus, [stim_bias] * int(nostim_after / dt)))
     elif stim == "dc":
         """Simple DC input and return to baseline
         """
-        stimulus = np.hstack(
-            (
-                [stim_bias] * int(nostim_before / dt),
-                [stim_bias + stim_amp] * int(1000 / dt),
-            )
-        )
+        stimulus = np.hstack(([stim_bias] * int(nostim_before / dt), [stim_bias + stim_amp] * int(1000 / dt),))
         stimulus = np.hstack((stimulus, [stim_bias] * int(nostim_after / dt)))
         stimulus[stimulus < 0] = 0
     elif stim == "rect":
