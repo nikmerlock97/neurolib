@@ -1,5 +1,6 @@
 <p align="center">
-  	<img alt="Header image of neurolib - A Python simulation framework foreasy whole-brain neural mass modeling." src="https://github.com/neurolib-dev/neurolib/raw/master/resources/readme_header.png" >
+  	<img alt="Header image of neurolib - A Python simulation framework for
+easy whole-brain neural mass modeling." src="https://github.com/neurolib-dev/neurolib/raw/master/resources/readme_header.png" >
 </p> 
 <p align="center">
   <a href="https://github.com/neurolib-dev/neurolib/actions">
@@ -266,3 +267,5 @@ Bernstein Center for Computational Neuroscience Berlin, Germany
 
 ### Acknowledgments
 This work was supported by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) with the project number 327654276 (SFB 1315) and the Research Training Group GRK1589/2.
+
+Forked from Neurolib.
